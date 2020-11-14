@@ -2,45 +2,25 @@
 
 [ownCloud](https://owncloud.org/) is a file sharing server that puts the control and security of your own data back into your hands.
 
-## This Helm chart is deprecated
-
-Given the [`stable` deprecation timeline](https://github.com/helm/charts#deprecation-timeline), the Bitnami maintained ownCloud Helm chart is now located at [bitnami/charts](https://github.com/bitnami/charts/).
-
-The Bitnami repository is already included in the Hubs and we will continue providing the same cadence of updates, support, etc that we've been keeping here these years. Installation instructions are very similar, just adding the _bitnami_ repo and using it during the installation (`bitnami/<chart>` instead of `stable/<chart>`)
-
-```bash
-$ helm repo add bitnami https://charts.bitnami.com/bitnami
-$ helm install my-release bitnami/<chart>           # Helm 3
-$ helm install --name my-release bitnami/<chart>    # Helm 2
-```
-
-To update an exisiting _stable_ deployment with a chart hosted in the bitnami repository you can execute
-
-```bash
-$ helm repo add bitnami https://charts.bitnami.com/bitnami
-$ helm upgrade my-release bitnami/<chart>
-```
-
-Issues and PRs related to the chart itself will be redirected to `bitnami/charts` GitHub repository. In the same way, we'll be happy to answer questions related to this migration process in [this issue](https://github.com/helm/charts/issues/20969) created as a common place for discussion.
-
-## TL;DR;
+## TL;DR
 
 ```console
-$ helm install my-release stable/owncloud
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+$ helm install my-release bitnami/owncloud
 ```
 
 ## Introduction
 
 This chart bootstraps an [ownCloud](https://github.com/bitnami/bitnami-docker-owncloud) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-It also packages the [Bitnami MariaDB chart](https://github.com/kubernetes/charts/tree/master/stable/mariadb) which is required for bootstrapping a MariaDB deployment for the database requirements of the ownCloud application.
+It also packages the [Bitnami MariaDB chart](https://github.com/kubernetes/charts/tree/master/bitnami/mariadb) which is required for bootstrapping a MariaDB deployment for the database requirements of the ownCloud application.
 
 Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for deployment and management of Helm Charts in clusters. This chart has been tested to work with NGINX Ingress, cert-manager, fluentd and Prometheus on top of the [BKPR](https://kubeprod.io/).
 
 ## Prerequisites
 
 - Kubernetes 1.12+
-- Helm 2.11+ or Helm 3.0-beta3+
+- Helm 2.12+ or Helm 3.0-beta3+
 - PV provisioner support in the underlying infrastructure
 - ReadWriteMany volumes for deployment scaling
 
@@ -49,7 +29,7 @@ Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for deployment
 To install the chart with the release name `my-release`:
 
 ```console
-$ helm install my-release stable/owncloud
+$ helm install my-release bitnami/owncloud
 ```
 
 The command deploys ownCloud on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
@@ -70,64 +50,78 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the ownCloud chart and their default values.
 
-|              Parameter              |                Description                 |                   Default                               |
-|-------------------------------------|--------------------------------------------|-------------------------------------------------------- |
-| `global.imageRegistry`              | Global Docker image registry               | `nil`                                                   |
-| `global.imagePullSecrets`           | Global Docker registry secret names as an array | `[]` (does not add image pull secrets to deployed pods) |
-| `global.storageClass`                     | Global storage class for dynamic provisioning                                               | `nil`                                                        |
-| `image.registry`                    | ownCloud image registry                    | `docker.io`                                             |
-| `image.repository`                  | ownCloud Image name                        | `bitnami/owncloud`                                      |
-| `image.tag`                         | ownCloud Image tag                         | `{TAG_NAME}`                                            |
-| `image.pullPolicy`                  | Image pull policy                          | `IfNotPresent`                                          |
-| `image.pullSecrets`                 | Specify docker-registry secret names as an array | `[]` (does not add image pull secrets to deployed pods) |
-| `nameOverride`                      | String to partially override owncloud.fullname template with a string (will prepend the release name) | `nil` |
-| `fullnameOverride`                  | String to fully override owncloud.fullname template with a string                                     | `nil` |
-| `ingress.enabled`                   | Enable ingress controller resource         | `false`                                                 |
-| `ingress.hosts.certManager`         | Add annotations for cert-manager           | `false`                                                 |
-| `ingress.annotations`               | Annotations for this host's ingress record | `[]`                                                    |
-| `ingress.hosts[0].name`             | Hostname to your ownCloud installation     | `owncloud.local`                                        |
-| `ingress.hosts[0].path`             | Path within the url structure              | `/`                                                     |
-| `ingress.hosts[0].tls`              | Utilize TLS backend in ingress             | `false`                                                 |
-| `ingress.hosts[0].tlsSecret`        | TLS Secret (certificates)                  | `owncloud.local-tls-secret`                             |
-| `ingress.secrets[0].name`           | TLS Secret Name                            | `nil`                                                   |
-| `ingress.secrets[0].certificate`    | TLS Secret Certificate                     | `nil`                                                   |
-| `ingress.secrets[0].key`            | TLS Secret Key                             | `nil`                                                   |
-| `networkPolicyApiVersion`           | The kubernetes network API version         | `extensions/v1beta1`                                    |
-| `owncloudHost`                      | ownCloud host to create application URLs   | `nil`                                                   |
-| `owncloudLoadBalancerIP`            | `loadBalancerIP` for the owncloud Service  | `nil`                                                   |
-| `owncloudUsername`                  | User of the application                    | `user`                                                  |
-| `owncloudPassword`                  | Application password                       | Randomly generated                                      |
-| `owncloudEmail`                     | Admin email                                | `user@example.com`                                      |
-| `externalDatabase.host`             | Host of the external database              | `nil`                                                   |
-| `allowEmptyPassword`                | Allow DB blank passwords                   | `yes`                                                   |
-| `externalDatabase.host`             | Host of the external database              | `nil`                                                   |
-| `externalDatabase.port`             | Port of the external database              | `3306`                                                  |
-| `externalDatabase.database`         | Name of the existing database              | `bitnami_owncloud`                                      |
-| `externalDatabase.user`             | Existing username in the external db       | `bn_owncloud`                                           |
-| `externalDatabase.password`         | Password for the above username            | `nil`                                                   |
-| `mariadb.db.name`                   | Database name to create                    | `bitnami_owncloud`                                      |
-| `mariadb.enabled`                   | Whether to use the MariaDB chart           | `true`                                                  |
-| `mariadb.db.password`               | Password for the database                  | `nil`                                                   |
-| `mariadb.db.user`                   | Database user to create                    | `bn_owncloud`                                           |
-| `mariadb.rootUser.password`         | MariaDB admin password                     | `nil`                                                   |
-| `serviceType`                       | Kubernetes Service type                    | `LoadBalancer`                                          |
-| `persistence.enabled`               | Enable persistence using PVC               | `true`                                                  |
-| `persistence.owncloud.storageClass` | PVC Storage Class for ownCloud volume      | `nil` (uses alpha storage class annotation)             |
-| `persistence.owncloud.existingClaim`| An Existing PVC name for ownCloud volume   | `nil` (uses alpha storage class annotation)             |
-| `persistence.owncloud.accessMode`   | PVC Access Mode for ownCloud volume        | `ReadWriteOnce`                                         |
-| `persistence.owncloud.size`         | PVC Storage Request for ownCloud volume    | `8Gi`                                                   |
-| `updateStrategy.type`               | Owncloud deployment strategy               | `RollingUpdate`                                         |
-| `resources`                         | CPU/Memory resource requests/limits        | Memory: `512Mi`, CPU: `300m`                            |
-| `podAnnotations`                    | Pod annotations                            | `{}`                                                    |
-| `affinity`                          | Map of node/pod affinities                 | `{}`                                                    |
-| `metrics.enabled`                   | Start a side-car prometheus exporter       | `false`                                                 |
-| `metrics.image.registry`            | Apache exporter image registry             | `docker.io`                                             |
-| `metrics.image.repository`          | Apache exporter image name                 | `bitnami/apache-exporter`                               |
-| `metrics.image.tag`                 | Apache exporter image tag                  | `{TAG_NAME}`                                            |
-| `metrics.image.pullPolicy`          | Image pull policy                          | `IfNotPresent`                                          |
-| `metrics.image.pullSecrets`         | Specify docker-registry secret names as an array | `[]` (does not add image pull secrets to deployed pods)  |
-| `metrics.podAnnotations`            | Additional annotations for Metrics exporter pod  | `{prometheus.io/scrape: "true", prometheus.io/port: "9117"}` |
-| `metrics.resources`                 | Exporter resource requests/limit           | {}                                                      |
+| Parameter                            | Description                                                                                           | Default                                                      |
+|--------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `global.imageRegistry`               | Global Docker image registry                                                                          | `nil`                                                        |
+| `global.imagePullSecrets`            | Global Docker registry secret names as an array                                                       | `[]` (does not add image pull secrets to deployed pods)      |
+| `global.storageClass`                | Global storage class for dynamic provisioning                                                         | `nil`                                                        |
+| `image.registry`                     | ownCloud image registry                                                                               | `docker.io`                                                  |
+| `image.repository`                   | ownCloud Image name                                                                                   | `bitnami/owncloud`                                           |
+| `image.tag`                          | ownCloud Image tag                                                                                    | `{TAG_NAME}`                                                 |
+| `image.pullPolicy`                   | Image pull policy                                                                                     | `IfNotPresent`                                               |
+| `image.pullSecrets`                  | Specify docker-registry secret names as an array                                                      | `[]` (does not add image pull secrets to deployed pods)      |
+| `nameOverride`                       | String to partially override owncloud.fullname template with a string (will prepend the release name) | `nil`                                                        |
+| `fullnameOverride`                   | String to fully override owncloud.fullname template with a string                                     | `nil`                                                        |
+| `ingress.enabled`                    | Enable ingress controller resource                                                                    | `false`                                                      |
+| `ingress.hosts.certManager`          | Add annotations for cert-manager                                                                      | `false`                                                      |
+| `ingress.annotations`                | Annotations for this host's ingress record                                                            | `[]`                                                         |
+| `ingress.hosts[0].name`              | Hostname to your ownCloud installation                                                                | `owncloud.local`                                             |
+| `ingress.hosts[0].path`              | Path within the url structure                                                                         | `/`                                                          |
+| `ingress.hosts[0].tls`               | Utilize TLS backend in ingress                                                                        | `false`                                                      |
+| `ingress.hosts[0].tlsSecret`         | TLS Secret (certificates)                                                                             | `owncloud.local-tls-secret`                                  |
+| `ingress.secrets[0].name`            | TLS Secret Name                                                                                       | `nil`                                                        |
+| `ingress.secrets[0].certificate`     | TLS Secret Certificate                                                                                | `nil`                                                        |
+| `ingress.secrets[0].key`             | TLS Secret Key                                                                                        | `nil`                                                        |
+| `networkPolicyApiVersion`            | The kubernetes network API version                                                                    | `extensions/v1beta1`                                         |
+| `owncloudHost`                       | ownCloud host to create application URLs                                                              | `nil`                                                        |
+| `owncloudLoadBalancerIP`             | `loadBalancerIP` for the owncloud Service                                                             | `nil`                                                        |
+| `owncloudUsername`                   | User of the application                                                                               | `user`                                                       |
+| `owncloudPassword`                   | Application password                                                                                  | Randomly generated                                           |
+| `owncloudEmail`                      | Admin email                                                                                           | `user@example.com`                                           |
+| `externalDatabase.host`              | Host of the external database                                                                         | `nil`                                                        |
+| `allowEmptyPassword`                 | Allow DB blank passwords                                                                              | `yes`                                                        |
+| `externalDatabase.host`              | Host of the external database                                                                         | `nil`                                                        |
+| `externalDatabase.port`              | Port of the external database                                                                         | `3306`                                                       |
+| `externalDatabase.database`          | Name of the existing database                                                                         | `bitnami_owncloud`                                           |
+| `externalDatabase.user`              | Existing username in the external db                                                                  | `bn_owncloud`                                                |
+| `externalDatabase.password`          | Password for the above username                                                                       | `nil`                                                        |
+| `mariadb.db.name`                    | Database name to create                                                                               | `bitnami_owncloud`                                           |
+| `mariadb.enabled`                    | Whether to use the MariaDB chart                                                                      | `true`                                                       |
+| `mariadb.db.password`                | Password for the database                                                                             | `nil`                                                        |
+| `mariadb.db.user`                    | Database user to create                                                                               | `bn_owncloud`                                                |
+| `mariadb.rootUser.password`          | MariaDB admin password                                                                                | `nil`                                                        |
+| `serviceType`                        | Kubernetes Service type                                                                               | `LoadBalancer`                                               |
+| `persistence.enabled`                | Enable persistence using PVC                                                                          | `true`                                                       |
+| `persistence.owncloud.storageClass`  | PVC Storage Class for ownCloud volume                                                                 | `nil` (uses alpha storage class annotation)                  |
+| `persistence.owncloud.existingClaim` | An Existing PVC name for ownCloud volume                                                              | `nil` (uses alpha storage class annotation)                  |
+| `persistence.owncloud.accessMode`    | PVC Access Mode for ownCloud volume                                                                   | `ReadWriteOnce`                                              |
+| `persistence.owncloud.size`          | PVC Storage Request for ownCloud volume                                                               | `8Gi`                                                        |
+| `updateStrategy.type`                | Owncloud deployment strategy                                                                          | `RollingUpdate`                                              |
+| `resources`                          | CPU/Memory resource requests/limits                                                                   | Memory: `512Mi`, CPU: `300m`                                 |
+| `podAnnotations`                     | Pod annotations                                                                                       | `{}`                                                         |
+| `affinity`                           | Map of node/pod affinities                                                                            | `{}`                                                         |
+| `extraEnvVars`                       | Pass extra environment variables to the image                                                         | `[]`                                                         |
+| `metrics.enabled`                    | Start a side-car prometheus exporter                                                                  | `false`                                                      |
+| `metrics.image.registry`             | Apache exporter image registry                                                                        | `docker.io`                                                  |
+| `metrics.image.repository`           | Apache exporter image name                                                                            | `bitnami/apache-exporter`                                    |
+| `metrics.image.tag`                  | Apache exporter image tag                                                                             | `{TAG_NAME}`                                                 |
+| `metrics.image.pullPolicy`           | Image pull policy                                                                                     | `IfNotPresent`                                               |
+| `metrics.image.pullSecrets`          | Specify docker-registry secret names as an array                                                      | `[]` (does not add image pull secrets to deployed pods)      |
+| `metrics.podAnnotations`             | Additional annotations for Metrics exporter pod                                                       | `{prometheus.io/scrape: "true", prometheus.io/port: "9117"}` |
+| `metrics.resources`                  | Exporter resource requests/limit                                                                      | {}                                                           |
+| `certificates.customCertificate.certificateSecret`| Secret containing the certificate and key to add                                         | `""`                                                         |
+| `certificates.customCertificate.chainSecret.name` | Name of the secret containing the certificate chain                                      | `""`                                                         |
+| `certificates.customCertificate.chainSecret.key`  | Key of the certificate chain file inside the secret                                      | `""`                                                         |
+| `certificates.customCertificate.certificateLocation`| Location in the container to store the certificate                                     | `/etc/ssl/certs/ssl-cert-snakeoil.pem`                       |
+| `certificates.customCertificate.keyLocation`| Location in the container to store the private key                                             | `/etc/ssl/private/ssl-cert-snakeoil.key`                     |
+| `certificates.customCertificate.chainLocation`| Location in the container to store the certificate chain                                     | `/etc/ssl/certs/chain.pem`                                   |
+| `certificates.customCAs`             | Defines a list of secrets to import into the container trust store                                    | `[]`                                                         |
+| `certificates.image.registry`        | Container sidecar registry                                                                            | `docker.io`                                                  |
+| `certificates.image.repository`      | Container sidecar image                                                                               | `bitnami/minideb`                                            |
+| `certificates.image.tag`             | Container sidecar image tag                                                                           | `buster`                                                     |
+| `certificates.image.pullPolicy`      | Container sidecar image pull policy                                                                   | `IfNotPresent`                                               |
+| `certificates.image.pullSecrets`     | Container sidecar image pull secrets                                                                  | `image.pullSecrets`                                          |
+| `certificates.extraEnvVars`          | Container sidecar extra environment variables (eg proxy)                                              | `[]`                                                         |
 
 The above parameters map to the env variables defined in [bitnami/owncloud](http://github.com/bitnami/bitnami-docker-owncloud). For more information please refer to the [bitnami/owncloud](http://github.com/bitnami/bitnami-docker-owncloud) image documentation.
 
@@ -150,7 +144,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 ```console
 $ helm install my-release \
   --set owncloudUsername=admin,owncloudPassword=password,mariadb.mariadbRootPassword=secretpassword \
-    stable/owncloud
+    bitnami/owncloud
 ```
 
 The above command sets the ownCloud administrator account username and password to `admin` and `password` respectively. Additionally, it sets the MariaDB `root` user password to `secretpassword`.
@@ -158,7 +152,7 @@ The above command sets the ownCloud administrator account username and password 
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install my-release -f values.yaml stable/owncloud
+$ helm install my-release -f values.yaml bitnami/owncloud
 ```
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
@@ -178,6 +172,26 @@ The [Bitnami ownCloud](https://github.com/bitnami/bitnami-docker-owncloud) image
 Persistent Volume Claims are used to keep the data across deployments. There is a [known issue](https://github.com/kubernetes/kubernetes/issues/39178) in Kubernetes Clusters with EBS in different availability zones. Ensure your cluster is configured properly to create Volumes in the same availability zone where the nodes are running. Kuberentes 1.12 solved this issue with the [Volume Binding Mode](https://kubernetes.io/docs/concepts/storage/storage-classes/#volume-binding-mode).
 
 See the [Parameters](#parameters) section to configure the PVC or to disable persistence.
+
+## CA Certificates
+
+Custom CA certificates not included in the base docker image can be added by means of existing secrets. The secret must exist in the same namespace and contain the desired CA certificates to import. By default, all found certificate files will be loaded.
+
+```yaml
+certificates:
+  customCAs:
+  - secret: my-ca-1
+  - secret: my-ca-2
+```
+
+> Tip! You can create a secret containing your CA certificates using the following command:
+```bash
+kubectl create secret generic my-ca-1 --from-file my-ca-1.crt
+```
+
+## Troubleshooting
+
+Find more information about how to deal with common errors related to Bitnami’s Helm charts in [this troubleshooting guide](https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues).
 
 ## Upgrading
 
