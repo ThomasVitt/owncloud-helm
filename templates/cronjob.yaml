@@ -12,7 +12,7 @@ spec:
           - args:
             - curl
             - http://owncloud:8080/cron.php
-            image: ${OWNCLOUD_IMAGE_NAME}
+            image: {{ .Values.image }}
             name: webcron
           restartPolicy: OnFailure
   schedule: '*/15 * * * *'
