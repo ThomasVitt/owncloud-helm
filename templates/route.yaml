@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Route
+metadata:
+  name: owncloud
+spec:
+  host: {{ .Values.publicDomain }}
+  port:
+    targetPort: http
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: owncloud
