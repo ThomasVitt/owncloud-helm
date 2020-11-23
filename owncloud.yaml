@@ -337,7 +337,6 @@ kind: Route
 metadata:
   name: owncloud
 spec:
-  host: owncloud.apps.primitivo.tvitt.io
   port:
     targetPort: http
   tls:
